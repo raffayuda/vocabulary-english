@@ -1,21 +1,26 @@
+import { Suspense } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { 
   BookOpen, 
   Brain, 
+  Heart, 
   TrendingUp,
-  Plus
+  Plus,
+  Target,
+  Trophy,
+  Clock
 } from "lucide-react";
 import DashboardStatsClient from "@/components/dashboard/DashboardStats";
 
 function QuickActions() {
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Plus className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
             Tambah Kosakata Baru
           </CardTitle>
         </CardHeader>
@@ -33,14 +38,14 @@ function QuickActions() {
       
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Brain className="h-5 w-5" />
-            Mulai Quiz
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Brain className="h-4 w-4 sm:h-5 sm:w-5" />
+            Quiz Interaktif
           </CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground mb-4">
-            Uji pengetahuan kosakata Anda
+            Uji kemampuan Anda dengan quiz
           </p>
           <Button asChild variant="outline" className="w-full">
             <Link href="/quiz">
@@ -52,8 +57,8 @@ function QuickActions() {
       
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BookOpen className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <BookOpen className="h-4 w-4 sm:h-5 sm:w-5" />
             Review Kosakata
           </CardTitle>
         </CardHeader>
@@ -74,10 +79,10 @@ function QuickActions() {
 
 export default function Dashboard() {
   return (
-    <div className="space-y-8">
+    <div className="container mx-auto px-4 py-6 space-y-6 sm:space-y-8 max-w-7xl">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Dashboard</h1>
+        <p className="text-muted-foreground text-sm sm:text-base">
           Selamat datang di aplikasi pembelajaran kosakata Anda
         </p>
       </div>
@@ -85,14 +90,14 @@ export default function Dashboard() {
       <DashboardStatsClient />
       
       <div>
-        <h2 className="text-2xl font-bold tracking-tight mb-4">Aksi Cepat</h2>
+        <h2 className="text-xl sm:text-2xl font-bold tracking-tight mb-4">Aksi Cepat</h2>
         <QuickActions />
       </div>
       
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5" />
             Progress Pembelajaran
           </CardTitle>
         </CardHeader>

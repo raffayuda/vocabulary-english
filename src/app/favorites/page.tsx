@@ -60,7 +60,7 @@ export default function FavoritesPage() {
         setFavorites(prev => prev.filter(vocab => vocab.id !== id));
         toast.success('Dihapus dari favorit');
       }
-    } catch {
+    } catch (error) {
       toast.error('Gagal menghapus dari favorit');
     }
   };
@@ -78,7 +78,7 @@ export default function FavoritesPage() {
         setFavorites(prev => prev.filter(vocab => vocab.id !== id));
         toast.success('Kosakata berhasil dihapus');
       }
-    } catch {
+    } catch (error) {
       toast.error('Gagal menghapus kosakata');
     }
   };
@@ -95,7 +95,7 @@ export default function FavoritesPage() {
 
   useEffect(() => {
     fetchFavorites();
-  }, [searchTerm]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [searchTerm]);
 
   const getDifficultyLabel = (difficulty: string) => {
     switch (difficulty) {
@@ -286,7 +286,7 @@ export default function FavoritesPage() {
                     
                     {vocab.example && (
                       <blockquote className="border-l-2 border-primary/30 pl-4 italic text-sm">
-                        &quot;{vocab.example}&quot;
+                        "{vocab.example}"
                       </blockquote>
                     )}
                     

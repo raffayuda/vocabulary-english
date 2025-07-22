@@ -29,6 +29,8 @@ export default function EditVocabularyPage() {
   const router = useRouter();
   const id = params.id as string;
 
+  const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     word: '',
     meaning: '',
@@ -40,18 +42,21 @@ export default function EditVocabularyPage() {
     masteryLevel: 1
   });
 
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [errors, setErrors] = useState<{[key: string]: string}>({});
-
   // Fetch vocabulary data
   useEffect(() => {
+    if (!id) return;
+
     const fetchVocabulary = async () => {
       try {
+        console.log('Fetching vocabulary with ID:', id);
         const response = await fetch(`/api/vocabulary/${id}`);
+        console.log('Response status:', response.status);
+        
+        const data = await response.json();
+        console.log('Response data:', data);
+        
         if (response.ok) {
-          const result = await response.json();
-          const vocab = result.data;
+          const vocab = data.data;
           setFormData({
             word: vocab.word || '',
             meaning: vocab.meaning || '',
@@ -63,11 +68,12 @@ export default function EditVocabularyPage() {
             masteryLevel: vocab.masteryLevel || 1
           });
         } else {
-          toast.error('Kosakata tidak ditemukan');
+          console.error('API Error:', data);
+          toast.error(data.error || 'Kosakata tidak ditemukan');
           router.push('/vocabulary');
         }
-      } catch {
-        console.error('Error fetching vocabulary');
+      } catch (error) {
+        console.error('Fetch error:', error);
         toast.error('Gagal memuat data kosakata');
         router.push('/vocabulary');
       } finally {
@@ -75,331 +81,236 @@ export default function EditVocabularyPage() {
       }
     };
 
-    if (id) {
-      fetchVocabulary();
-    }
+    fetchVocabulary();
   }, [id, router]);
 
-  // Validate form
-  const validateForm = (): boolean => {
-    const newErrors: {[key: string]: string} = {};
-
-    if (!formData.word.trim()) {
-      newErrors.word = 'Kata wajib diisi';
-    }
-
-    if (!formData.meaning.trim()) {
-      newErrors.meaning = 'Arti wajib diisi';
-    }
-
-    if (formData.phonetic && !formData.phonetic.match(/^[a-zA-Z\s\/\[\]əɪɛɔɑʊʌɜːɒθðʃʒŋ]+$/)) {
-      newErrors.phonetic = 'Format phonetic tidak valid';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+  const handleInputChange = (field: keyof FormData, value: string | boolean | number) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
-  // Handle form submission
+  const validateForm = () => {
+    if (!formData.word.trim()) {
+      toast.error('Kata tidak boleh kosong');
+      return false;
+    }
+    if (!formData.meaning.trim()) {
+      toast.error('Arti tidak boleh kosong');
+      return false;
+    }
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!validateForm()) {
-      toast.error('Mohon perbaiki error pada form');
-      return;
-    }
+    if (!validateForm()) return;
 
-    setSaving(true);
+    setIsSubmitting(true);
 
     try {
       const response = await fetch(`/api/vocabulary/${id}`, {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          word: formData.word.trim(),
-          meaning: formData.meaning.trim(),
-          phonetic: formData.phonetic.trim() || null,
-          partOfSpeech: formData.partOfSpeech || null,
-          example: formData.example.trim() || null,
-          difficulty: formData.difficulty,
-          isFavorite: formData.isFavorite,
-          masteryLevel: formData.masteryLevel
-        }),
+        body: JSON.stringify(formData)
       });
+
+      const data = await response.json();
 
       if (response.ok) {
         toast.success('Kosakata berhasil diperbarui!');
         router.push('/vocabulary');
       } else {
-        const errorData = await response.json();
-        toast.error(errorData.error || 'Gagal memperbarui kosakata');
+        toast.error(data.error || 'Gagal memperbarui kosakata');
       }
-    } catch (error) {
-      console.error('Error updating vocabulary:', error);
-      toast.error('Terjadi kesalahan saat memperbarui');
+    } catch {
+      toast.error('Terjadi kesalahan. Silakan coba lagi.');
     } finally {
-      setSaving(false);
-    }
-  };
-
-  // Handle input changes
-  const handleInputChange = (field: keyof FormData, value: string | number | boolean) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-    
-    // Clear error when user starts typing
-    if (errors[field]) {
-      setErrors(prev => ({
-        ...prev,
-        [field]: ''
-      }));
+      setIsSubmitting(false);
     }
   };
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <div className="h-8 w-8 bg-gray-200 rounded"></div>
-          <div className="h-8 bg-gray-200 rounded w-64"></div>
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="flex items-center space-x-2">
+            <Loader2 className="w-6 h-6 animate-spin" />
+            <span>Memuat data...</span>
+          </div>
         </div>
-        <Card>
-          <CardContent className="p-6">
-            <div className="animate-pulse space-y-4">
-              <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-              <div className="h-10 bg-gray-200 rounded"></div>
-              <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-              <div className="h-10 bg-gray-200 rounded"></div>
-              <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-              <div className="h-20 bg-gray-200 rounded"></div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="outline" size="icon" asChild>
+    <div className="container mx-auto px-4 py-8">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="flex items-center gap-4 mb-6">
           <Link href="/vocabulary">
-            <ArrowLeft className="h-4 w-4" />
+            <Button variant="outline" size="icon">
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
           </Link>
-        </Button>
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Edit Kosakata</h1>
-          <p className="text-muted-foreground">
-            Perbarui informasi kosakata &quot;{formData.word}&quot;
-          </p>
+          <div>
+            <h1 className="text-3xl font-bold">Edit Kosakata</h1>
+            <p className="text-muted-foreground">
+              Perbarui informasi kosakata yang sudah ada
+            </p>
+          </div>
         </div>
-      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Informasi Kosakata</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid gap-6 md:grid-cols-2">
-              {/* Word */}
-              <div className="space-y-2">
-                <Label htmlFor="word">
-                  Kata <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="word"
-                  value={formData.word}
-                  onChange={(e) => handleInputChange('word', e.target.value)}
-                  placeholder="Masukkan kata dalam bahasa Inggris"
-                  className={errors.word ? 'border-red-500' : ''}
-                />
-                {errors.word && (
-                  <p className="text-sm text-red-500">{errors.word}</p>
-                )}
-              </div>
-
-              {/* Phonetic */}
-              <div className="space-y-2">
-                <Label htmlFor="phonetic">Phonetic (Opsional)</Label>
-                <Input
-                  id="phonetic"
-                  value={formData.phonetic}
-                  onChange={(e) => handleInputChange('phonetic', e.target.value)}
-                  placeholder="Contoh: /ˈhæpi/"
-                  className={errors.phonetic ? 'border-red-500' : ''}
-                />
-                {errors.phonetic && (
-                  <p className="text-sm text-red-500">{errors.phonetic}</p>
-                )}
-              </div>
-            </div>
-
-            {/* Meaning */}
-            <div className="space-y-2">
-              <Label htmlFor="meaning">
-                Arti <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="meaning"
-                value={formData.meaning}
-                onChange={(e) => handleInputChange('meaning', e.target.value)}
-                placeholder="Masukkan arti dalam bahasa Indonesia"
-                className={errors.meaning ? 'border-red-500' : ''}
-              />
-              {errors.meaning && (
-                <p className="text-sm text-red-500">{errors.meaning}</p>
-              )}
-            </div>
-
-            <div className="grid gap-6 md:grid-cols-2">
-              {/* Part of Speech */}
-              <div className="space-y-2">
-                <Label htmlFor="partOfSpeech">Jenis Kata (Opsional)</Label>
-                <Select 
-                  value={formData.partOfSpeech || "none"} 
-                  onValueChange={(value) => handleInputChange('partOfSpeech', value === "none" ? "" : value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Pilih jenis kata" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Tidak dipilih</SelectItem>
-                    <SelectItem value="noun">Noun (Kata Benda)</SelectItem>
-                    <SelectItem value="verb">Verb (Kata Kerja)</SelectItem>
-                    <SelectItem value="adjective">Adjective (Kata Sifat)</SelectItem>
-                    <SelectItem value="adverb">Adverb (Kata Keterangan)</SelectItem>
-                    <SelectItem value="preposition">Preposition (Kata Depan)</SelectItem>
-                    <SelectItem value="conjunction">Conjunction (Kata Sambung)</SelectItem>
-                    <SelectItem value="pronoun">Pronoun (Kata Ganti)</SelectItem>
-                    <SelectItem value="interjection">Interjection (Kata Seru)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Difficulty */}
-              <div className="space-y-2">
-                <Label htmlFor="difficulty">Tingkat Kesulitan</Label>
-                <Select 
-                  value={formData.difficulty} 
-                  onValueChange={(value: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED') => 
-                    handleInputChange('difficulty', value)
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="BEGINNER">Pemula</SelectItem>
-                    <SelectItem value="INTERMEDIATE">Menengah</SelectItem>
-                    <SelectItem value="ADVANCED">Lanjutan</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* Example */}
-            <div className="space-y-2">
-              <Label htmlFor="example">Contoh Kalimat (Opsional)</Label>
-              <Textarea
-                id="example"
-                value={formData.example}
-                onChange={(e) => handleInputChange('example', e.target.value)}
-                placeholder="Masukkan contoh penggunaan kata dalam kalimat"
-                rows={3}
-              />
-            </div>
-
-            {/* Mastery Level */}
-            <div className="space-y-2">
-              <Label htmlFor="masteryLevel">Tingkat Penguasaan</Label>
-              <div className="space-y-2">
-                <Select 
-                  value={formData.masteryLevel.toString()} 
-                  onValueChange={(value) => handleInputChange('masteryLevel', parseInt(value))}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1">1 - Baru Mengenal</SelectItem>
-                    <SelectItem value="2">2 - Sedikit Paham</SelectItem>
-                    <SelectItem value="3">3 - Cukup Paham</SelectItem>
-                    <SelectItem value="4">4 - Paham dengan Baik</SelectItem>
-                    <SelectItem value="5">5 - Sangat Menguasai</SelectItem>
-                  </SelectContent>
-                </Select>
-                <div className="flex items-center gap-1">
-                  <span className="text-xs text-muted-foreground">Level saat ini:</span>
-                  <div className="flex">
-                    {[1, 2, 3, 4, 5].map((level) => (
-                      <div
-                        key={level}
-                        className={`w-3 h-3 rounded-full mr-1 ${
-                          level <= formData.masteryLevel
-                            ? 'bg-yellow-400'
-                            : 'bg-gray-200'
-                        }`}
-                      />
-                    ))}
-                  </div>
+        {/* Form */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Informasi Kosakata</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="word">Kata (Bahasa Inggris) *</Label>
+                  <Input
+                    id="word"
+                    value={formData.word}
+                    onChange={(e) => handleInputChange("word", e.target.value)}
+                    placeholder="Masukkan kata dalam bahasa Inggris"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="meaning">Arti (Bahasa Indonesia) *</Label>
+                  <Input
+                    id="meaning"
+                    value={formData.meaning}
+                    onChange={(e) => handleInputChange("meaning", e.target.value)}
+                    placeholder="Masukkan arti dalam bahasa Indonesia"
+                    required
+                  />
                 </div>
               </div>
-            </div>
 
-            {/* Favorite */}
-            <div className="flex items-center space-x-2">
-              <Checkbox 
-                id="favorite"
-                checked={formData.isFavorite}
-                onCheckedChange={(checked) => handleInputChange('isFavorite', checked)}
-              />
-              <Label 
-                htmlFor="favorite"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Tandai sebagai favorit
-              </Label>
-            </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="phonetic">Fonetik (Opsional)</Label>
+                  <Input
+                    id="phonetic"
+                    value={formData.phonetic}
+                    onChange={(e) => handleInputChange("phonetic", e.target.value)}
+                    placeholder="Contoh: /ˈhæpi/"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="partOfSpeech">Jenis Kata (Opsional)</Label>
+                  <Input
+                    id="partOfSpeech"
+                    value={formData.partOfSpeech}
+                    onChange={(e) => handleInputChange("partOfSpeech", e.target.value)}
+                    placeholder="Contoh: noun, verb, adjective"
+                  />
+                </div>
+              </div>
 
-            {/* Action Buttons */}
-            <div className="flex gap-4 pt-6">
-              <Button 
-                type="submit" 
-                disabled={saving}
-                className="flex-1 md:flex-initial"
-              >
-                {saving ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Menyimpan...
-                  </>
-                ) : (
-                  <>
-                    <Save className="h-4 w-4 mr-2" />
-                    Simpan Perubahan
-                  </>
-                )}
-              </Button>
-              
-              <Button 
-                type="button" 
-                variant="outline"
-                asChild
-                className="flex-1 md:flex-initial"
-              >
+              <div className="space-y-2">
+                <Label htmlFor="example">Contoh Kalimat (Opsional)</Label>
+                <Textarea
+                  id="example"
+                  value={formData.example}
+                  onChange={(e) => handleInputChange("example", e.target.value)}
+                  placeholder="Masukkan contoh penggunaan kata dalam kalimat"
+                  rows={3}
+                />
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>Tingkat Kesulitan</Label>
+                  <Select
+                    value={formData.difficulty}
+                    onValueChange={(value: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED') => 
+                      handleInputChange("difficulty", value)
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="BEGINNER">Pemula</SelectItem>
+                      <SelectItem value="INTERMEDIATE">Menengah</SelectItem>
+                      <SelectItem value="ADVANCED">Lanjutan</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Tingkat Penguasaan (1-5)</Label>
+                  <Select
+                    value={formData.masteryLevel.toString()}
+                    onValueChange={(value) => 
+                      handleInputChange("masteryLevel", parseInt(value))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">1 - Baru Mengenal</SelectItem>
+                      <SelectItem value="2">2 - Sedikit Paham</SelectItem>
+                      <SelectItem value="3">3 - Cukup Paham</SelectItem>
+                      <SelectItem value="4">4 - Paham</SelectItem>
+                      <SelectItem value="5">5 - Sangat Paham</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="favorite"
+                  checked={formData.isFavorite}
+                  onCheckedChange={(checked) => 
+                    handleInputChange("isFavorite", checked as boolean)
+                  }
+                />
+                <Label htmlFor="favorite">Tandai sebagai favorit</Label>
+              </div>
+
+              <div className="flex gap-4 pt-4">
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="flex-1"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Menyimpan...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4 mr-2" />
+                      Simpan Perubahan
+                    </>
+                  )}
+                </Button>
                 <Link href="/vocabulary">
-                  Batal
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={isSubmitting}
+                  >
+                    Batal
+                  </Button>
                 </Link>
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

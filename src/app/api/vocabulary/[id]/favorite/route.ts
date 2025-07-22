@@ -5,10 +5,10 @@ const prisma = new PrismaClient();
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await params;
+    const { id } = params;
     const { isFavorite } = await request.json();
 
     const updatedVocabulary = await prisma.vocabulary.update({

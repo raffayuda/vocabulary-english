@@ -34,9 +34,9 @@ export async function GET(
       );
     }
 
-    return NextResponse.json({ 
-      message: 'Kosakata berhasil ditemukan',
-      data: vocabulary 
+    return NextResponse.json({
+      success: true,
+      data: vocabulary
     });
   } catch (error) {
     console.error('Error fetching vocabulary:', error);
@@ -85,40 +85,36 @@ export async function PUT(
 
     if (existingWord) {
       return NextResponse.json(
-        { error: 'Kata ini sudah ada dalam kosakata' },
+        { error: 'Kata sudah ada dalam database' },
         { status: 400 }
       );
     }
 
+    // Update vocabulary
     const updatedVocabulary = await prisma.vocabulary.update({
       where: { id },
       data: {
-        word: validatedData.word.toLowerCase(),
-        meaning: validatedData.meaning,
-        phonetic: validatedData.phonetic,
-        partOfSpeech: validatedData.partOfSpeech,
-        example: validatedData.example,
-        difficulty: validatedData.difficulty,
-        isFavorite: validatedData.isFavorite,
-        masteryLevel: validatedData.masteryLevel,
+        ...validatedData,
         updatedAt: new Date()
       }
     });
 
-    return NextResponse.json({ 
+    return NextResponse.json({
+      success: true,
       message: 'Kosakata berhasil diperbarui',
-      data: updatedVocabulary 
+      data: updatedVocabulary
     });
+
   } catch (error) {
-    console.error('Error updating vocabulary:', error);
-    
     if (error instanceof z.ZodError) {
+      const firstError = error.issues[0];
       return NextResponse.json(
-        { error: 'Data tidak valid', details: error.issues },
+        { error: firstError?.message || 'Data tidak valid' },
         { status: 400 }
       );
     }
 
+    console.error('Error updating vocabulary:', error);
     return NextResponse.json(
       { error: 'Gagal memperbarui kosakata' },
       { status: 500 }

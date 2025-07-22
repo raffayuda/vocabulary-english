@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Link from "next/link";
-import { Plus, Search, Heart, Edit, Trash2 } from "lucide-react";
+import { Plus, Search, Filter, Heart, Edit, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface Vocabulary {
@@ -75,7 +75,7 @@ export default function VocabularyPage() {
         );
         toast.success(currentState ? 'Dihapus dari favorit' : 'Ditambah ke favorit');
       }
-    } catch {
+    } catch (error) {
       toast.error('Gagal mengupdate favorit');
     }
   };
@@ -93,14 +93,14 @@ export default function VocabularyPage() {
         setVocabularies(prev => prev.filter(vocab => vocab.id !== id));
         toast.success('Kosakata berhasil dihapus');
       }
-    } catch {
+    } catch (error) {
       toast.error('Gagal menghapus kosakata');
     }
   };
 
   useEffect(() => {
     fetchVocabularies();
-  }, [searchTerm, difficultyFilter, favoriteFilter]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [searchTerm, difficultyFilter, favoriteFilter]);
 
   const getDifficultyLabel = (difficulty: string) => {
     switch (difficulty) {
@@ -148,16 +148,16 @@ export default function VocabularyPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="container mx-auto px-4 py-6 space-y-6 max-w-7xl">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Kosakata Saya</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Kosakata Saya</h1>
+          <p className="text-muted-foreground text-sm sm:text-base">
             Kelola koleksi kosakata bahasa Inggris Anda
           </p>
         </div>
         
-        <Button asChild>
+        <Button asChild className="w-full sm:w-auto">
           <Link href="/vocabulary/new">
             <Plus className="h-4 w-4 mr-2" />
             Tambah Kata
@@ -236,27 +236,27 @@ export default function VocabularyPage() {
         <div className="grid gap-4">
           {vocabularies.map((vocab) => (
             <Card key={vocab.id} className="hover:shadow-md transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between">
-                  <div className="space-y-2 flex-1">
-                    <div className="flex items-center gap-3">
-                      <h3 className="text-xl font-semibold capitalize">{vocab.word}</h3>
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                  <div className="space-y-2 flex-1 min-w-0">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                      <h3 className="text-lg sm:text-xl font-semibold capitalize break-words">{vocab.word}</h3>
                       {vocab.phonetic && (
-                        <span className="text-sm text-muted-foreground bg-muted px-2 py-1 rounded">
+                        <span className="text-xs sm:text-sm text-muted-foreground bg-muted px-2 py-1 rounded self-start">
                           {vocab.phonetic}
                         </span>
                       )}
                     </div>
                     
-                    <p className="text-muted-foreground text-lg">{vocab.meaning}</p>
+                    <p className="text-muted-foreground text-base sm:text-lg break-words">{vocab.meaning}</p>
                     
                     {vocab.example && (
-                      <blockquote className="border-l-2 border-primary/30 pl-4 italic text-sm">
-                        &quot;{vocab.example}&quot;
+                      <blockquote className="border-l-2 border-primary/30 pl-4 italic text-sm break-words">
+                        "{vocab.example}"
                       </blockquote>
                     )}
                     
-                    <div className="flex items-center gap-2 pt-2">
+                    <div className="flex flex-wrap items-center gap-2 pt-2">
                       {vocab.partOfSpeech && (
                         <span className="text-xs bg-secondary text-secondary-foreground px-2 py-1 rounded">
                           {vocab.partOfSpeech}
@@ -285,10 +285,10 @@ export default function VocabularyPage() {
                     </div>
                   </div>
                   
-                  <div className="flex items-center gap-2 ml-4">
-                    <Button variant="ghost" size="sm" asChild>
+                  <div className="flex items-center gap-1 sm:gap-2 sm:ml-4 flex-shrink-0">
+                    <Button variant="ghost" size="sm" asChild className="h-8 w-8 p-0 sm:h-9 sm:w-9">
                       <Link href={`/vocabulary/${vocab.id}/edit`}>
-                        <Edit className="h-4 w-4" />
+                        <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
                       </Link>
                     </Button>
                     
@@ -296,18 +296,18 @@ export default function VocabularyPage() {
                       variant="ghost" 
                       size="sm"
                       onClick={() => toggleFavorite(vocab.id, vocab.isFavorite)}
-                      className={vocab.isFavorite ? "text-red-500 hover:text-red-700" : ""}
+                      className={`h-8 w-8 p-0 sm:h-9 sm:w-9 ${vocab.isFavorite ? "text-red-500 hover:text-red-700" : ""}`}
                     >
-                      <Heart className={`h-4 w-4 ${vocab.isFavorite ? 'fill-current' : ''}`} />
+                      <Heart className={`h-3 w-3 sm:h-4 sm:w-4 ${vocab.isFavorite ? 'fill-current' : ''}`} />
                     </Button>
                     
                     <Button 
                       variant="ghost" 
                       size="sm"
                       onClick={() => deleteVocabulary(vocab.id)}
-                      className="text-red-500 hover:text-red-700"
+                      className="h-8 w-8 p-0 sm:h-9 sm:w-9 text-red-500 hover:text-red-700"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
                     </Button>
                   </div>
                 </div>

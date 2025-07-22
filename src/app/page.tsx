@@ -12,74 +12,7 @@ import {
   Trophy,
   Clock
 } from "lucide-react";
-
-// Placeholder untuk data statistik
-const stats = {
-  total: 0,
-  mastered: 0,
-  learning: 0,
-  favorites: 0,
-  todayStudied: 0,
-  streak: 0
-};
-
-function DashboardStats() {
-  return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Total Kosakata</CardTitle>
-          <BookOpen className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{stats.total}</div>
-          <p className="text-xs text-muted-foreground">
-            kata tersimpan
-          </p>
-        </CardContent>
-      </Card>
-      
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Dikuasai</CardTitle>
-          <Trophy className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{stats.mastered}</div>
-          <p className="text-xs text-muted-foreground">
-            kata dikuasai
-          </p>
-        </CardContent>
-      </Card>
-      
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Favorit</CardTitle>
-          <Heart className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{stats.favorites}</div>
-          <p className="text-xs text-muted-foreground">
-            kata favorit
-          </p>
-        </CardContent>
-      </Card>
-      
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Streak Hari Ini</CardTitle>
-          <Target className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{stats.streak}</div>
-          <p className="text-xs text-muted-foreground">
-            hari berturut-turut
-          </p>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
+import DashboardStatsClient from "@/components/dashboard/DashboardStats";
 
 function QuickActions() {
   return (
@@ -154,9 +87,7 @@ export default function Dashboard() {
         </p>
       </div>
       
-      <Suspense fallback={<div>Loading stats...</div>}>
-        <DashboardStats />
-      </Suspense>
+      <DashboardStatsClient />
       
       <div>
         <h2 className="text-2xl font-bold tracking-tight mb-4">Aksi Cepat</h2>
@@ -172,24 +103,8 @@ export default function Dashboard() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div>
-              <div className="flex items-center justify-between text-sm">
-                <span>Kata yang Dikuasai</span>
-                <span>{stats.mastered}/{stats.total}</span>
-              </div>
-              <div className="w-full bg-secondary rounded-full h-2 mt-1">
-                <div 
-                  className="bg-primary h-2 rounded-full" 
-                  style={{ width: stats.total > 0 ? `${(stats.mastered / stats.total) * 100}%` : '0%' }}
-                ></div>
-              </div>
-            </div>
-            
             <p className="text-sm text-muted-foreground">
-              {stats.total === 0 
-                ? "Belum ada kosakata. Mulai dengan menambah kata pertama Anda!" 
-                : `Terus tingkatkan! Anda sudah menguasai ${stats.mastered} dari ${stats.total} kata.`
-              }
+              Lihat progress pembelajaran Anda di statistik di atas. Terus tambahkan kosakata baru dan lakukan quiz untuk meningkatkan kemampuan!
             </p>
           </div>
         </CardContent>

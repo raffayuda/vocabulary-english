@@ -1,90 +1,152 @@
-import { Suspense } from "react";
+"use client";
+
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Link from "next/link";
-import { Plus, Search, Filter } from "lucide-react";
+import { Plus, Search, Filter, Heart, Edit, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
-// Placeholder untuk data vocabulary
-const vocabularyList: any[] = [];
-
-function VocabularyList() {
-  if (vocabularyList.length === 0) {
-    return (
-      <Card>
-        <CardContent className="py-12 text-center">
-          <div className="space-y-4">
-            <div className="text-muted-foreground">
-              <p className="text-lg">Belum ada kosakata tersimpan</p>
-              <p>Mulai dengan menambahkan kata pertama Anda!</p>
-            </div>
-            <Button asChild>
-              <Link href="/vocabulary/new">
-                <Plus className="h-4 w-4 mr-2" />
-                Tambah Kosakata Pertama
-              </Link>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <div className="grid gap-4">
-      {vocabularyList.map((vocab) => (
-        <Card key={vocab.id}>
-          <CardContent className="p-6">
-            <div className="flex items-start justify-between">
-              <div className="space-y-2">
-                <div className="flex items-center gap-3">
-                  <h3 className="text-xl font-semibold">{vocab.word}</h3>
-                  {vocab.phonetic && (
-                    <span className="text-sm text-muted-foreground bg-muted px-2 py-1 rounded">
-                      {vocab.phonetic}
-                    </span>
-                  )}
-                </div>
-                <p className="text-muted-foreground">{vocab.meaning}</p>
-                {vocab.example && (
-                  <p className="text-sm italic border-l-2 border-muted pl-3">
-                    "{vocab.example}"
-                  </p>
-                )}
-                <div className="flex items-center gap-2 pt-2">
-                  {vocab.partOfSpeech && (
-                    <span className="text-xs bg-secondary text-secondary-foreground px-2 py-1 rounded">
-                      {vocab.partOfSpeech}
-                    </span>
-                  )}
-                  <span className={`text-xs px-2 py-1 rounded ${
-                    vocab.difficulty === 'BEGINNER' ? 'bg-green-100 text-green-800' :
-                    vocab.difficulty === 'INTERMEDIATE' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-red-100 text-red-800'
-                  }`}>
-                    {vocab.difficulty === 'BEGINNER' ? 'Pemula' :
-                     vocab.difficulty === 'INTERMEDIATE' ? 'Menengah' : 'Lanjutan'}
-                  </span>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-2">
-                <Button variant="ghost" size="sm">
-                  Edit
-                </Button>
-                <Button variant="ghost" size="sm">
-                  ♥
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
-  );
+interface Vocabulary {
+  id: string;
+  word: string;
+  meaning: string;
+  phonetic?: string;
+  partOfSpeech?: string;
+  example?: string;
+  difficulty: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED';
+  isFavorite: boolean;
+  masteryLevel: number;
+  createdAt: string;
 }
 
 export default function VocabularyPage() {
+  const [vocabularies, setVocabularies] = useState<Vocabulary[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [difficultyFilter, setDifficultyFilter] = useState("all");
+  const [favoriteFilter, setFavoriteFilter] = useState("all");
+
+  // Fetch vocabularies
+  const fetchVocabularies = async () => {
+    try {
+      const params = new URLSearchParams();
+      if (searchTerm) params.append('search', searchTerm);
+      if (difficultyFilter !== 'all') params.append('difficulty', difficultyFilter);
+      
+      const response = await fetch(`/api/vocabulary?${params}`);
+      if (response.ok) {
+        const result = await response.json();
+        let data = result.data || [];
+        
+        // Filter favorites on client side
+        if (favoriteFilter === 'favorites') {
+          data = data.filter((vocab: Vocabulary) => vocab.isFavorite);
+        }
+        
+        setVocabularies(data);
+      }
+    } catch (error) {
+      console.error('Error fetching vocabularies:', error);
+      toast.error('Gagal memuat kosakata');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Toggle favorite
+  const toggleFavorite = async (id: string, currentState: boolean) => {
+    try {
+      const response = await fetch(`/api/vocabulary/${id}/favorite`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isFavorite: !currentState })
+      });
+
+      if (response.ok) {
+        setVocabularies(prev => 
+          prev.map(vocab => 
+            vocab.id === id 
+              ? { ...vocab, isFavorite: !currentState }
+              : vocab
+          )
+        );
+        toast.success(currentState ? 'Dihapus dari favorit' : 'Ditambah ke favorit');
+      }
+    } catch (error) {
+      toast.error('Gagal mengupdate favorit');
+    }
+  };
+
+  // Delete vocabulary
+  const deleteVocabulary = async (id: string) => {
+    if (!confirm('Apakah Anda yakin ingin menghapus kosakata ini?')) return;
+    
+    try {
+      const response = await fetch(`/api/vocabulary/${id}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        setVocabularies(prev => prev.filter(vocab => vocab.id !== id));
+        toast.success('Kosakata berhasil dihapus');
+      }
+    } catch (error) {
+      toast.error('Gagal menghapus kosakata');
+    }
+  };
+
+  useEffect(() => {
+    fetchVocabularies();
+  }, [searchTerm, difficultyFilter, favoriteFilter]);
+
+  const getDifficultyLabel = (difficulty: string) => {
+    switch (difficulty) {
+      case 'BEGINNER': return 'Pemula';
+      case 'INTERMEDIATE': return 'Menengah';
+      case 'ADVANCED': return 'Lanjutan';
+      default: return difficulty;
+    }
+  };
+
+  const getDifficultyColor = (difficulty: string) => {
+    switch (difficulty) {
+      case 'BEGINNER': return 'bg-green-100 text-green-800';
+      case 'INTERMEDIATE': return 'bg-yellow-100 text-yellow-800';
+      case 'ADVANCED': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="h-8 bg-gray-200 rounded w-48 mb-2"></div>
+            <div className="h-4 bg-gray-200 rounded w-64"></div>
+          </div>
+          <div className="h-10 bg-gray-200 rounded w-32"></div>
+        </div>
+        <div className="grid gap-4">
+          {[1, 2, 3].map(i => (
+            <Card key={i}>
+              <CardContent className="p-6">
+                <div className="animate-pulse space-y-2">
+                  <div className="h-6 bg-gray-200 rounded w-1/4"></div>
+                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                  <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -106,26 +168,154 @@ export default function VocabularyPage() {
       {/* Search and Filter */}
       <Card>
         <CardContent className="p-4">
-          <div className="flex gap-4">
+          <div className="flex gap-4 flex-col md:flex-row">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input 
                 placeholder="Cari kosakata..." 
                 className="pl-10"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <Button variant="outline">
-              <Filter className="h-4 w-4 mr-2" />
-              Filter
-            </Button>
+            
+            <Select value={difficultyFilter} onValueChange={setDifficultyFilter}>
+              <SelectTrigger className="w-full md:w-[180px]">
+                <SelectValue placeholder="Tingkat Kesulitan" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Semua Tingkat</SelectItem>
+                <SelectItem value="BEGINNER">Pemula</SelectItem>
+                <SelectItem value="INTERMEDIATE">Menengah</SelectItem>
+                <SelectItem value="ADVANCED">Lanjutan</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            <Select value={favoriteFilter} onValueChange={setFavoriteFilter}>
+              <SelectTrigger className="w-full md:w-[180px]">
+                <SelectValue placeholder="Filter Favorit" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Semua Kata</SelectItem>
+                <SelectItem value="favorites">Hanya Favorit</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
       </Card>
 
       {/* Vocabulary List */}
-      <Suspense fallback={<div>Loading vocabulary...</div>}>
-        <VocabularyList />
-      </Suspense>
+      {vocabularies.length === 0 ? (
+        <Card>
+          <CardContent className="py-12 text-center">
+            <div className="space-y-4">
+              <div className="text-muted-foreground">
+                <p className="text-lg">
+                  {searchTerm || difficultyFilter !== 'all' || favoriteFilter !== 'all'
+                    ? 'Tidak ada kosakata yang sesuai dengan filter'
+                    : 'Belum ada kosakata tersimpan'
+                  }
+                </p>
+                <p>
+                  {searchTerm || difficultyFilter !== 'all' || favoriteFilter !== 'all'
+                    ? 'Coba ubah filter pencarian Anda'
+                    : 'Mulai dengan menambahkan kata pertama Anda!'
+                  }
+                </p>
+              </div>
+              <Button asChild>
+                <Link href="/vocabulary/new">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Tambah Kosakata
+                </Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid gap-4">
+          {vocabularies.map((vocab) => (
+            <Card key={vocab.id} className="hover:shadow-md transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex items-start justify-between">
+                  <div className="space-y-2 flex-1">
+                    <div className="flex items-center gap-3">
+                      <h3 className="text-xl font-semibold capitalize">{vocab.word}</h3>
+                      {vocab.phonetic && (
+                        <span className="text-sm text-muted-foreground bg-muted px-2 py-1 rounded">
+                          {vocab.phonetic}
+                        </span>
+                      )}
+                    </div>
+                    
+                    <p className="text-muted-foreground text-lg">{vocab.meaning}</p>
+                    
+                    {vocab.example && (
+                      <blockquote className="border-l-2 border-primary/30 pl-4 italic text-sm">
+                        "{vocab.example}"
+                      </blockquote>
+                    )}
+                    
+                    <div className="flex items-center gap-2 pt-2">
+                      {vocab.partOfSpeech && (
+                        <span className="text-xs bg-secondary text-secondary-foreground px-2 py-1 rounded">
+                          {vocab.partOfSpeech}
+                        </span>
+                      )}
+                      <span className={`text-xs px-2 py-1 rounded ${getDifficultyColor(vocab.difficulty)}`}>
+                        {getDifficultyLabel(vocab.difficulty)}
+                      </span>
+                      
+                      {/* Mastery Level */}
+                      <div className="flex items-center gap-1">
+                        <span className="text-xs text-muted-foreground">Penguasaan:</span>
+                        <div className="flex">
+                          {[1, 2, 3, 4, 5].map((level) => (
+                            <div
+                              key={level}
+                              className={`w-2 h-2 rounded-full mr-1 ${
+                                level <= vocab.masteryLevel
+                                  ? 'bg-yellow-400'
+                                  : 'bg-gray-200'
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 ml-4">
+                    <Button variant="ghost" size="sm" asChild>
+                      <Link href={`/vocabulary/${vocab.id}/edit`}>
+                        <Edit className="h-4 w-4" />
+                      </Link>
+                    </Button>
+                    
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => toggleFavorite(vocab.id, vocab.isFavorite)}
+                      className={vocab.isFavorite ? "text-red-500 hover:text-red-700" : ""}
+                    >
+                      <Heart className={`h-4 w-4 ${vocab.isFavorite ? 'fill-current' : ''}`} />
+                    </Button>
+                    
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => deleteVocabulary(vocab.id)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

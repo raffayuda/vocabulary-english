@@ -1,16 +1,11 @@
-import { Suspense } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { 
   BookOpen, 
-  Brain, 
-  Heart, 
+  Brain,
   TrendingUp,
-  Plus,
-  Target,
-  Trophy,
-  Clock
+  Plus
 } from "lucide-react";
 import DashboardStatsClient from "@/components/dashboard/DashboardStats";
 

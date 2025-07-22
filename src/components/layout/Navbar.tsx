@@ -13,8 +13,7 @@ import {
   BarChart3, 
   Settings,
   Plus,
-  Menu,
-  X
+  Menu
 } from "lucide-react";
 
 const navigation = [

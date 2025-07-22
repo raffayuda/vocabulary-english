@@ -139,12 +139,12 @@ export default function QuizPage() {
     } else {
       // Quiz finished
       setShowResult(true);
-      saveQuizResult(isCorrect ? score + 1 : score);
+      saveQuizResult();
     }
   };
 
   // Save quiz result
-  const saveQuizResult = async (finalScore: number) => {
+  const saveQuizResult = async () => {
     try {
       const vocabularyResults = answers.map(answer => ({
         vocabularyId: currentQuiz.find(q => q.word === answer.question)?.id || '',
@@ -174,7 +174,7 @@ export default function QuizPage() {
 
   useEffect(() => {
     fetchVocabularies();
-  }, [difficulty]);
+  }, [difficulty]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!quizStarted) {
     return (
@@ -313,7 +313,7 @@ export default function QuizPage() {
                 Quiz Lagi
               </Button>
               <Button variant="outline" asChild className="flex-1">
-                <Link href="/dashboard">
+                <Link href="/">
                   Kembali ke Dashboard
                 </Link>
               </Button>
@@ -357,7 +357,7 @@ export default function QuizPage() {
             )}
             {currentQuestion.example && (
               <blockquote className="border-l-2 border-primary/30 pl-4 italic text-muted-foreground mt-4">
-                "{currentQuestion.example}"
+                &quot;{currentQuestion.example}&quot;
               </blockquote>
             )}
           </div>

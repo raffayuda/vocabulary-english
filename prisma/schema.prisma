@@ -1,0 +1,89 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Model untuk menyimpan kosakata
+model Vocabulary {
+  id          String   @id @default(cuid())
+  word        String   @unique
+  meaning     String
+  phonetic    String?  // Pengucapan (opsional)
+  partOfSpeech String? // Jenis kata (noun, verb, adj, dll)
+  example     String?  // Contoh kalimat
+  difficulty  Level    @default(BEGINNER)
+  isFavorite  Boolean  @default(false)
+  masteryLevel Int     @default(0) // 0-5, tingkat penguasaan
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relasi dengan quiz
+  quizResults QuizResult[]
+  
+  // Relasi dengan kategori
+  categories VocabularyCategory[]
+  
+  @@map("vocabularies")
+}
+
+// Model untuk menyimpan hasil quiz
+model QuizResult {
+  id           String      @id @default(cuid())
+  vocabularyId String
+  vocabulary   Vocabulary  @relation(fields: [vocabularyId], references: [id], onDelete: Cascade)
+  isCorrect    Boolean
+  attemptedAt  DateTime    @default(now())
+  quizType     QuizType    @default(MULTIPLE_CHOICE)
+  
+  @@map("quiz_results")
+}
+
+// Model untuk menyimpan kategori/tag
+model Category {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  color       String?  // Hex color untuk UI
+  createdAt   DateTime @default(now())
+  
+  // Many-to-many relationship dengan vocabulary
+  vocabularies VocabularyCategory[]
+  
+  @@map("categories")
+}
+
+// Junction table untuk many-to-many relationship
+model VocabularyCategory {
+  vocabularyId String
+  categoryId   String
+  vocabulary   Vocabulary @relation(fields: [vocabularyId], references: [id], onDelete: Cascade)
+  category     Category   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  
+  @@id([vocabularyId, categoryId])
+  @@map("vocabulary_categories")
+}
+
+// Enum untuk tingkat kesulitan
+enum Level {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+// Enum untuk jenis quiz
+enum QuizType {
+  MULTIPLE_CHOICE
+  FILL_IN_BLANK
+  PRONUNCIATION
+  MEANING_MATCH
+}

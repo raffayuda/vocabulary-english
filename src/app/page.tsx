@@ -1,103 +1,199 @@
-import Image from "next/image";
+import { Suspense } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { 
+  BookOpen, 
+  Brain, 
+  Heart, 
+  TrendingUp,
+  Plus,
+  Target,
+  Trophy,
+  Clock
+} from "lucide-react";
 
-export default function Home() {
+// Placeholder untuk data statistik
+const stats = {
+  total: 0,
+  mastered: 0,
+  learning: 0,
+  favorites: 0,
+  todayStudied: 0,
+  streak: 0
+};
+
+function DashboardStats() {
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Total Kosakata</CardTitle>
+          <BookOpen className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{stats.total}</div>
+          <p className="text-xs text-muted-foreground">
+            kata tersimpan
+          </p>
+        </CardContent>
+      </Card>
+      
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Dikuasai</CardTitle>
+          <Trophy className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{stats.mastered}</div>
+          <p className="text-xs text-muted-foreground">
+            kata dikuasai
+          </p>
+        </CardContent>
+      </Card>
+      
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Favorit</CardTitle>
+          <Heart className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{stats.favorites}</div>
+          <p className="text-xs text-muted-foreground">
+            kata favorit
+          </p>
+        </CardContent>
+      </Card>
+      
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Streak Hari Ini</CardTitle>
+          <Target className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{stats.streak}</div>
+          <p className="text-xs text-muted-foreground">
+            hari berturut-turut
+          </p>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+function QuickActions() {
+  return (
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Plus className="h-5 w-5" />
+            Tambah Kosakata Baru
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground mb-4">
+            Tambahkan kata baru ke koleksi Anda
+          </p>
+          <Button asChild className="w-full">
+            <Link href="/vocabulary/new">
+              Tambah Kata
+            </Link>
+          </Button>
+        </CardContent>
+      </Card>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Brain className="h-5 w-5" />
+            Mulai Quiz
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground mb-4">
+            Uji pengetahuan kosakata Anda
+          </p>
+          <Button asChild variant="outline" className="w-full">
+            <Link href="/quiz">
+              Mulai Quiz
+            </Link>
+          </Button>
+        </CardContent>
+      </Card>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <BookOpen className="h-5 w-5" />
+            Review Kosakata
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground mb-4">
+            Tinjau semua kosakata yang telah dipelajari
+          </p>
+          <Button asChild variant="outline" className="w-full">
+            <Link href="/vocabulary">
+              Lihat Semua
+            </Link>
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+export default function Dashboard() {
+  return (
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+        <p className="text-muted-foreground">
+          Selamat datang di aplikasi pembelajaran kosakata Anda
+        </p>
+      </div>
+      
+      <Suspense fallback={<div>Loading stats...</div>}>
+        <DashboardStats />
+      </Suspense>
+      
+      <div>
+        <h2 className="text-2xl font-bold tracking-tight mb-4">Aksi Cepat</h2>
+        <QuickActions />
+      </div>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <TrendingUp className="h-5 w-5" />
+            Progress Pembelajaran
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div>
+              <div className="flex items-center justify-between text-sm">
+                <span>Kata yang Dikuasai</span>
+                <span>{stats.mastered}/{stats.total}</span>
+              </div>
+              <div className="w-full bg-secondary rounded-full h-2 mt-1">
+                <div 
+                  className="bg-primary h-2 rounded-full" 
+                  style={{ width: stats.total > 0 ? `${(stats.mastered / stats.total) * 100}%` : '0%' }}
+                ></div>
+              </div>
+            </div>
+            
+            <p className="text-sm text-muted-foreground">
+              {stats.total === 0 
+                ? "Belum ada kosakata. Mulai dengan menambah kata pertama Anda!" 
+                : `Terus tingkatkan! Anda sudah menguasai ${stats.mastered} dari ${stats.total} kata.`
+              }
+            </p>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

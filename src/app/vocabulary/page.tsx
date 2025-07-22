@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Link from "next/link";
-import { Plus, Search, Filter, Heart, Edit, Trash2 } from "lucide-react";
+import { Plus, Search, Heart, Edit, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface Vocabulary {
@@ -75,7 +75,7 @@ export default function VocabularyPage() {
         );
         toast.success(currentState ? 'Dihapus dari favorit' : 'Ditambah ke favorit');
       }
-    } catch (error) {
+    } catch {
       toast.error('Gagal mengupdate favorit');
     }
   };
@@ -93,14 +93,14 @@ export default function VocabularyPage() {
         setVocabularies(prev => prev.filter(vocab => vocab.id !== id));
         toast.success('Kosakata berhasil dihapus');
       }
-    } catch (error) {
+    } catch {
       toast.error('Gagal menghapus kosakata');
     }
   };
 
   useEffect(() => {
     fetchVocabularies();
-  }, [searchTerm, difficultyFilter, favoriteFilter]);
+  }, [searchTerm, difficultyFilter, favoriteFilter]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const getDifficultyLabel = (difficulty: string) => {
     switch (difficulty) {
@@ -252,7 +252,7 @@ export default function VocabularyPage() {
                     
                     {vocab.example && (
                       <blockquote className="border-l-2 border-primary/30 pl-4 italic text-sm">
-                        "{vocab.example}"
+                        &quot;{vocab.example}&quot;
                       </blockquote>
                     )}
                     

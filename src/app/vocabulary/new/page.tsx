@@ -49,7 +49,7 @@ export default function NewVocabularyPage() {
         const error = await response.json();
         toast.error(error.message || "Gagal menambahkan kosakata");
       }
-    } catch (error) {
+    } catch {
       toast.error("Terjadi kesalahan. Silakan coba lagi.");
     } finally {
       setIsLoading(false);

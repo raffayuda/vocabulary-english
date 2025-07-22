@@ -13,18 +13,6 @@ import Link from "next/link";
 import { ArrowLeft, Save, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
-interface Vocabulary {
-  id: string;
-  word: string;
-  meaning: string;
-  phonetic?: string;
-  partOfSpeech?: string;
-  example?: string;
-  difficulty: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED';
-  isFavorite: boolean;
-  masteryLevel: number;
-}
-
 interface FormData {
   word: string;
   meaning: string;
@@ -78,8 +66,8 @@ export default function EditVocabularyPage() {
           toast.error('Kosakata tidak ditemukan');
           router.push('/vocabulary');
         }
-      } catch (error) {
-        console.error('Error fetching vocabulary:', error);
+      } catch {
+        console.error('Error fetching vocabulary');
         toast.error('Gagal memuat data kosakata');
         router.push('/vocabulary');
       } finally {
@@ -157,7 +145,7 @@ export default function EditVocabularyPage() {
   };
 
   // Handle input changes
-  const handleInputChange = (field: keyof FormData, value: any) => {
+  const handleInputChange = (field: keyof FormData, value: string | number | boolean) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -206,7 +194,7 @@ export default function EditVocabularyPage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Edit Kosakata</h1>
           <p className="text-muted-foreground">
-            Perbarui informasi kosakata "{formData.word}"
+            Perbarui informasi kosakata &quot;{formData.word}&quot;
           </p>
         </div>
       </div>

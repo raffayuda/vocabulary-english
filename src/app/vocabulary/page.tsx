@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Link from "next/link";
-import { Plus, Search, Heart, Edit, Trash2 } from "lucide-react";
+import { Plus, Search, Heart, Edit, Trash2, Upload } from "lucide-react";
 import { toast } from "sonner";
 
 interface Vocabulary {
@@ -157,12 +157,20 @@ export default function VocabularyPage() {
           </p>
         </div>
         
-        <Button asChild className="w-full sm:w-auto">
-          <Link href="/vocabulary/new">
-            <Plus className="h-4 w-4 mr-2" />
-            Tambah Kata
-          </Link>
-        </Button>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Button asChild variant="outline" className="w-full sm:w-auto">
+            <Link href="/vocabulary/import">
+              <Upload className="h-4 w-4 mr-2" />
+              Import
+            </Link>
+          </Button>
+          <Button asChild className="w-full sm:w-auto">
+            <Link href="/vocabulary/new">
+              <Plus className="h-4 w-4 mr-2" />
+              Tambah Kata
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {/* Search and Filter */}
